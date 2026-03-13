@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>La Pirámide</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#09090F}
+body{font-family:Georgia,'Times New Roman',serif}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{border-radius:2px;background:#3A3A5A}
+input,select,textarea{outline:none;font-family:inherit}
+input[type=range]{cursor:pointer;width:100%}
+textarea{resize:none;line-height:1.6}
+button{cursor:pointer;font-family:inherit}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toast{0%{opacity:0;transform:translateX(-50%) translateY(-10px)}15%,80%{opacity:1;transform:translateX(-50%) translateY(0)}100%{opacity:0;transform:translateX(-50%) translateY(-8px)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+#app{max-width:430px;margin:0 auto;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:#09090F;color:#C8C0A8;position:relative}
+#main{flex:1;min-height:0;padding:18px 14px 88px;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;display:flex;background:rgba(9,9,15,.96);border-top:1px solid #1E1E30;backdrop-filter:blur(12px);padding:6px 0 10px;z-index:50}
+.nb{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;background:none;border:none;color:inherit}
+.ni{font-size:22px;transition:filter .2s}
+.ni.dim{filter:grayscale(1) opacity(.3)}
+.nl{font-size:9px;text-transform:uppercase;letter-spacing:.8px;font-family:'Georgia',serif;transition:color .2s}
+.nd{width:18px;height:2px;border-radius:1px;margin-top:1px}
+#toast-el{position:fixed;top:14px;left:50%;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:700;font-family:'Georgia',serif;letter-spacing:.8px;z-index:9999;white-space:nowrap;animation:toast 3.5s ease forwards;pointer-events:none;display:none}
+.btn-p{width:100%;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:900;font-family:'Georgia',serif;letter-spacing:2px}
+.sbox{border-radius:8px;padding:8px 4px;text-align:center}
+.sval{font-size:20px;font-weight:900;font-family:'Georgia',serif}
+.slbl{font-size:8px;text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+.pbar{height:6px;border-radius:3px;overflow:hidden}
+.pfill{height:100%;border-radius:3px;transition:width 1s ease}
+.mpill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.mbw{height:5px;border-radius:3px;overflow:hidden;margin-top:4px}
+.mbf{height:100%;border-radius:3px;transition:width .6s}
+.rpill{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+.ahdr{width:100%;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Georgia',serif;border:none;transition:all .2s;text-align:left}
+.abody{padding:14px;border-top:none;border-radius:0 0 10px 10px;animation:slideDown .2s ease}
+.hrow{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:10px 12px;border-radius:8px}
+.igrid{display:flex;flex-wrap:wrap;gap:3px;max-height:220px;overflow-y:auto}
+.ibtn{width:36px;height:36px;border-radius:6px;font-size:20px;flex-shrink:0;transition:all .1s;display:flex;align-items:center;justify-content:center}
+.csw{width:34px;height:34px;border-radius:8px;flex-shrink:0;transition:all .15s}
+.tbtn{flex:1;padding:8px;border-radius:7px;font-size:13px;font-weight:700;transition:all .2s}
+.sbtn{flex:1;padding:8px;border-radius:7px;font-size:15px;transition:all .2s}
+.bbtn{width:100%;padding:13px;border-radius:10px;font-size:13px;font-weight:900;font-family:'Georgia',serif;letter-spacing:1px;border:none;transition:all .3s}
+.stitle{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.flbl{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.fi{width:100%;padding:9px 12px;border-radius:8px;font-size:13px}
+.ni2{width:100%;padding:8px;border-radius:7px;text-align:center;font-size:14px;font-weight:700}
+.bnum{width:100%;padding:8px;border-radius:7px;text-align:center;font-size:18px;font-weight:900;font-family:'Georgia',serif}
+.tcard{padding:14px 8px;border-radius:10px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.tdot{width:14px;height:14px;border-radius:3px;display:inline-block}
+.back{background:none;border:none;font-size:22px;line-height:1;padding:0}
+.dbtn{padding:5px 8px;border-radius:6px;background:none;font-size:13px}
+.ebtn{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700}
+.abtn{width:100%;padding:10px;border-radius:8px;background:none;font-size:13px;font-weight:700}
+.gsts{padding:10px 14px;border-radius:8px;font-size:12px;font-family:Georgia,serif;line-height:1.5}
+.pw{position:relative;display:inline-block}
+.pdrop{position:absolute;top:110%;left:0;z-index:500;border-radius:12px;padding:12px;width:290px;box-shadow:0 8px 40px #00000099;animation:slideDown .2s ease}
+.psrch{width:100%;padding:7px 10px;border-radius:7px;margin-bottom:8px;font-size:12px}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="main"></div>
+  <div id="toast-el"></div>
+  <nav id="nav"></nav>
+</div>
+<script>
+const THEMES={
+  stone:{name:"Piedra Oscura",mode:"dark",bg:"#09090F",surface:"#0E0E1A",card:"#13131F",border:"#1E1E30",border2:"#2A2A40",text:"#C8C0A8",muted:"#6A6A8A",faint:"#3A3A5A",accent:"#D4A843",accentDark:"#7A5010",accentGlow:"#D4A84344",danger:"#EF5350",warn:"#FFB300",success:"#66BB6A",blockFill:"linear-gradient(145deg,#B87830,#5A3808)",blockEdge:"linear-gradient(145deg,#D4A843,#7A5010)",blockTop:"linear-gradient(145deg,#FFD54F,#FF8F00)",blockEmpty:"transparent",blockBorder:"#2A2A1A",navBg:"rgba(9,9,15,.96)"},
+  midnight:{name:"Medianoche",mode:"dark",bg:"#050810",surface:"#0A0D1A",card:"#0F1220",border:"#181C30",border2:"#252A45",text:"#B8C8E8",muted:"#5A6888",faint:"#2A3050",accent:"#5B8CFF",accentDark:"#1A3A8A",accentGlow:"#5B8CFF33",danger:"#FF6B6B",warn:"#FFA040",success:"#50D890",blockFill:"linear-gradient(145deg,#2040A0,#0A1850)",blockEdge:"linear-gradient(145deg,#5B8CFF,#2040A0)",blockTop:"linear-gradient(145deg,#90B8FF,#5B8CFF)",blockEmpty:"transparent",blockBorder:"#1A2040",navBg:"rgba(5,8,16,.96)"},
+  parchment:{name:"Pergamino",mode:"light",bg:"#F5EDD8",surface:"#EDE0C4",card:"#E8D8B0",border:"#C8B080",border2:"#B09060",text:"#3A2808",muted:"#7A6040",faint:"#C8B080",accent:"#8B4513",accentDark:"#5A2A08",accentGlow:"#8B451333",danger:"#C0392B",warn:"#D4800A",success:"#27AE60",blockFill:"linear-gradient(145deg,#8B6030,#5A3808)",blockEdge:"linear-gradient(145deg,#A0702A,#6A4010)",blockTop:"linear-gradient(145deg,#C8901A,#8B6030)",blockEmpty:"#D4C0A022",blockBorder:"#C8B08066",navBg:"rgba(245,237,216,.96)"},
+  light:{name:"Claridad",mode:"light",bg:"#F4F6FA",surface:"#ECEEF5",card:"#E4E8F2",border:"#C8CCDE",border2:"#A8AECE",text:"#1A1E2E",muted:"#6870A0",faint:"#C0C4D8",accent:"#4A5FCC",accentDark:"#2A3A9A",accentGlow:"#4A5FCC33",danger:"#E53935",warn:"#F57C00",success:"#388E3C",blockFill:"linear-gradient(145deg,#4A5FCC,#2A3A9A)",blockEdge:"linear-gradient(145deg,#7A90FF,#4A5FCC)",blockTop:"linear-gradient(145deg,#A0B0FF,#7A90FF)",blockEmpty:"#C8CCDE44",blockBorder:"#C8CCDE88",navBg:"rgba(244,246,250,.96)"}
+};
+const HI=["💧","🥗","⏱️","💪","🏗️","📋","🧠","🎯","📚","🌅","🏃","🍎","💤","✍️","🔋","🧘","🏋️","🚴","🤸","❤️","🩺","💊","🌡️","🧬","🦷","👁️","🫀","🦴","🤲","🫁","🥦","🥚","🥑","🫐","🍋","🥕","🧄","🍵","☕","🧃","🍽️","🥄","🧂","🥩","🍳","🫘","🌮","🍱","🥜","🍇","🫒","🍊","🌽","🥝","📖","🗒️","✅","🔍","💡","🧩","🗓️","⏰","🔔","📊","📈","🎓","🏆","🥇","⭐","🎤","🎧","🖊️","📐","🔭","🔬","💻","📱","🗂️","📎","📌","🗺️","🌿","🔥","⚒️","✨","🌙","🌊","🌸","🌻","🍃","🪴","🌱","🌄","☀️","⚡","❄️","🌈","🌋","🏔️","🏝️","🌾","🍀","🔑","💎","🪙","📦","🛠️","⚙️","🔧","🏠","🏰","🛡️","⚔️","🎲","🎸","🎨","🪄","🧲","🔮","💼","🗝️","🧸","🎀","🎭","🏺","🧭","⚓","🦅","🐺","🦁","🐉","🦋","🐬","🦚","🦊","🐻","🦌","🐝","🦎","🐋","🦜","🐅","🦒","🐘","🦓","🦈","♾️","🔱","⚜️","🌀","💫","☯️","🧿","🪐","💠","🔷","🟡","🔴","🟢","🟣","❤️","🧡","💛","💚","💙","💜","🖤","🤍","💗","💝"];
+const MI=["💧","🌿","🔥","⚒️","✨","🌙","⭐","🍎","🧠","🏃","📚","💎","🌊","🔑","🌸","⚡","🔮","🦋","🌻","🏆","💰","🎯","❤️","🪙","🛡️","🐉","🌟","🪐","🍃","🌀","🦅","🧬","🫀","🌈","🔱","⚜️","💫","🦁","🌱","🎲","🧪","🪄","🕊️","🦊","🏔️","🌺","💠","🔷","🌋","⚓","🧭","🏺","🎭","🎨","🎸","🎤","🔭","🔬","🧲","⚗️","🧿","🗝️","🏅","🎪"];
+const MC=["#29B6F6","#A1887F","#FF7043","#FFB300","#66BB6A","#CE93D8","#F48FB1","#80DEEA","#FF8A65","#AED581","#4FC3F7","#FFF176","#BCAAA4","#EF9A9A","#A5D6A7","#90CAF9","#FFCC02","#FF6B9D","#C3F584","#67E8F9","#FB923C","#A78BFA","#34D399","#F87171"];
+const DM=[{id:"blue",name:"Éter Azul",icon:"💧",color:"#29B6F6",dark:"#0D47A1"},{id:"brown",name:"Tierra Fértil",icon:"🌿",color:"#A1887F",dark:"#3E2723"},{id:"red",name:"Llama Roja",icon:"🔥",color:"#FF7043",dark:"#7F0000"},{id:"gold",name:"Piedra Solar",icon:"⚒️",color:"#FFB300",dark:"#E65100"},{id:"green",name:"Esencia Viva",icon:"✨",color:"#66BB6A",dark:"#1B5E20"}];
+const DH=[{id:"h1",name:"Hidratación",desc:"Beber en la fuente en cada cambio de sala durante el turno nocturno. Sin botella permitida en las salas de producción, así que la constancia depende de aprovechar cada pausa y desplazamiento.",matId:"blue",type:"scale",min:1,max:3,threshold:2,bonus:3,icon:"💧"},{id:"h2",name:"Cena preparada",desc:"Llevar desde casa la cena del turno: ensalada con legumbres, huevo duro, queso de cabra, tomatitos cherry y aguacate o nueces. Evita el picoteo y los picos de triglicéridos durante la noche.",matId:"brown",type:"bool",min:0,max:1,threshold:1,bonus:null,icon:"🥗"},{id:"h3",name:"Ayuno respetado",desc:"Respetar la ventana de ayuno entre el desayuno post-turno (batido de colágeno con creatina) y la comida principal del día. Sin picoteo intermedio.",matId:"blue",type:"bool",min:0,max:1,threshold:1,bonus:null,icon:"⏱️"},{id:"h4",name:"Ejercicio",desc:"Sesión de fuerza funcional y movilidad: sentadillas, flexiones en pared, remo con banda elástica y plancha. Mínimo 15 minutos.",matId:"red",type:"number",min:0,max:60,threshold:15,bonus:30,icon:"💪"},{id:"h5",name:"Oliveras",desc:"Tiempo real trabajado en el proyecto de la fábrica centenaria: gestión de obra, coordinación de albañiles, compras de material, burocracia o trabajo físico.",matId:"gold",type:"number",min:0,max:8,threshold:2,bonus:4,icon:"🏗️"},{id:"h6",name:"Revisión semanal",desc:"20 minutos revisando el estado de gestiones pendientes, la agenda de la semana siguiente y el avance del proyecto Oliveras. Solo el primer día de la semana libre.",matId:"green",type:"bool",min:0,max:1,threshold:1,bonus:null,icon:"📋"}];
+const DC={habits:DH,materials:DM,squareRecipe:{blue:1,brown:1,red:0,gold:1,green:0},triangleRecipe:{blue:0,brown:1,red:1,gold:0,green:1},behavior:{soft:{days:2,pct:50},hard:{days:15,pct:100}},themeId:"stone",maxReserve:5,githubToken:"",gistId:""};
+const DS={blocksPlaced:0,reserveBlocks:0,consecutiveMisses:0,lastBuildDate:null,collapseCount:0,pyramidsCompleted:0,squarePlaced:0,trianglePlaced:0};
+const MR=10,TOT=100,GF="piramide_habitos_backup.json";
+const SK={s:"pxv4-state",m:"pxv4-mats",c:"pxv4-cfg",l:"pxv4-logs"};
+
+function sg(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch{return null}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}
+function T(){return THEMES[S.themeId]}
+function gm(id){return S.cfg.materials.find(m=>m.id===id)||{id,name:id,icon:"❓",color:"#888",dark:"#444"}}
+function bst(mats){const o={};mats.forEach(m=>{o[m.id]=0});return o}
+function cb(stock,recipe,mats){return mats.every(m=>(stock[m.id]||0)>=(recipe[m.id]||0))}
+function ded(stock,recipe){const n={...stock};Object.keys(recipe).forEach(k=>{n[k]=Math.max(0,(n[k]||0)-(recipe[k]||0))});return n}
+function miss(d){if(!d)return 0;const a=new Date(d),b=new Date();a.setHours(0,0,0,0);b.setHours(0,0,0,0);return Math.max(0,Math.floor((b-a)/86400000)-1)}
+function fills(n){const f=new Array(MR).fill(0);let r=n;for(let i=MR-1;i>=0&&r>0;i--){const sq=2*i+1;f[i]=Math.min(r,sq);r-=f[i];}return f}
+
+let S={
+  tab:"pyramid",gs:{...DS},ms:{},cfg:JSON.parse(JSON.stringify(DC)),themeId:"stone",
+  tlog:null,logs:[],done:false,vals:{},
+  eh:null,em:null,cs:null,po:null,ps:"",
+  bst:null,bgists:[],bsel:""
+};
+
+function init(){
+  const c=sg(SK.c)||{};
+  S.cfg={...JSON.parse(JSON.stringify(DC)),...c};
+  if(!S.cfg.materials?.length)S.cfg.materials=DM.map(m=>({...m}));
+  const st=sg(SK.s)||{};
+  S.gs={...DS,...st};
+  const m=miss(S.gs.lastBuildDate);
+  if(m>0){
+    S.gs.consecutiveMisses=Math.max(S.gs.consecutiveMisses||0,m);
+    const beh=S.cfg.behavior;
+    if(S.gs.consecutiveMisses>=beh.hard.days&&S.gs.blocksPlaced>0){
+      S.gs.blocksPlaced=Math.max(0,S.gs.blocksPlaced-Math.ceil(S.gs.blocksPlaced*beh.hard.pct/100));
+      S.gs.reserveBlocks=0;S.gs.consecutiveMisses=0;S.gs.squarePlaced=0;S.gs.trianglePlaced=0;S.gs.collapseCount=(S.gs.collapseCount||0)+1;
+      ss(SK.s,S.gs);
+    }
+  }
+  S.themeId=sg('pxv4-theme')||S.cfg.themeId||"stone";S.cfg.themeId=S.themeId;
+  S.ms={...bst(S.cfg.materials),...(sg(SK.m)||{})};
+  S.logs=sg(SK.l)||[];
+  const td=new Date().toDateString();
+  S.tlog=S.logs.find(l=>l.date===td)||null;
+  S.done=!!S.tlog;
+  S.vals={};
+  S.cfg.habits.forEach(h=>{S.vals[h.id]=S.tlog?.values?.[h.id]??(h.type==="bool"?0:h.min||0)});
+  render();
+  // Auto-load backup on start if credentials exist
+  if(S.cfg.githubToken&&S.cfg.gistId){
+    setTimeout(()=>autoLoad(),800);
+  }
+}
+
+function showToast(msg,color){
+  const el=document.getElementById("toast-el");
+  el.textContent=msg;
+  el.style.cssText=`position:fixed;top:14px;left:50%;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:700;font-family:'Georgia',serif;letter-spacing:.8px;z-index:9999;white-space:nowrap;pointer-events:none;background:#09090F;border:1px solid ${color}99;color:${color};box-shadow:0 4px 24px ${color}44;animation:toast 3.5s ease forwards`;
+  el.style.display="block";
+  setTimeout(()=>{el.style.display="none"},3600);
+}
+
+function render(){
+  const Th=T();
+  document.getElementById("app").style.background=Th.bg;
+  document.getElementById("app").style.color=Th.text;
+  document.body.style.background=Th.bg;
+  rNav();rMain();
+}
+
+function rNav(){
+  const Th=T();
+  const tabs=[{id:"pyramid",ic:"🏛️",lb:"Pirámide"},{id:"registro",ic:"📝",lb:"Registro"},{id:"almacen",ic:"⚗️",lb:"Almacén"},{id:"config",ic:"⚙️",lb:"Config"}];
+  const nav=document.getElementById("nav");
+  nav.style.background=Th.navBg;
+  nav.style.borderTop=`1px solid ${Th.border}`;
+  nav.innerHTML=tabs.map(t=>`<button class="nb" onclick="setTab('${t.id}')"><span class="ni ${S.tab===t.id?'':'dim'}">${t.ic}</span><span class="nl" style="color:${S.tab===t.id?Th.accent:Th.faint}">${t.lb}</span>${S.tab===t.id?`<div class="nd" style="background:${Th.accent}"></div>`:""}</button>`).join("");
+}
+
+function rMain(){
+  const m=document.getElementById("main");
+  m.style.animation="none";void m.offsetHeight;m.style.animation="rise .35s ease";
+  if(S.tab==="pyramid")m.innerHTML=vPyramid();
+  else if(S.tab==="registro")m.innerHTML=vRegistro();
+  else if(S.tab==="almacen")m.innerHTML=vAlmacen();
+  else{
+    if(S.eh)m.innerHTML=vHE();
+    else if(S.em)m.innerHTML=vME();
+    else m.innerHTML=vConfig();
+  }
+  aev();
+}
+
+function pyr(n,w,h){
+  const Th=T(),f=fills(n),gap=1;
+  const cols=MR*2-1; // 19 bloques en la base
+  // Tamaño por ancho
+  const bwByW=Math.floor((w-gap*(cols-1))/cols);
+  // Tamaño por alto disponible
+  const bwByH=h?Math.floor((h-gap*(MR-1))/MR/1.5):999;
+  const bw=Math.max(12,Math.min(bwByW,bwByH));
+  const bh=Math.round(bw*1.5); // bloques más altos que anchos
+  let rows="";
+  for(let i=0;i<MR;i++){
+    const sq=2*i+1,fi=f[i];let cells="";
+    for(let j=0;j<sq;j++){
+      const iF=j<fi,isE=i>0&&(j===0||j===sq-1),isT=i===0&&iF;
+      let bg=Th.blockEmpty,bo=Th.blockBorder+"44",r=2,filt="";
+      if(iF){
+        if(isT){bg=Th.blockTop;bo=Th.accent;filt=`filter:drop-shadow(0 0 6px ${Th.accent}99)`;r=3}
+        else if(isE){bg=Th.blockEdge;bo=Th.accent+"88"}
+        else{bg=Th.blockFill;bo=Th.accentDark}
+      }
+      cells+=`<div style="width:${bw}px;height:${bh}px;background:${bg};border:1px solid ${bo};border-radius:${r}px;flex-shrink:0;${filt};transition:background .4s"></div>`;
+    }
+    rows+=`<div style="display:flex;gap:${gap}px;justify-content:center;margin-bottom:${gap}px">${cells}</div>`;
+  }
+  return`<div style="display:flex;flex-direction:column;align-items:center">${rows}</div>`;
+}
+
+function vPyramid(){
+  const Th=T(),gs=S.gs;
+  const missed=Math.max(gs.consecutiveMisses,miss(gs.lastBuildDate));
+  const pct=Math.round(gs.blocksPlaced/TOT*100);
+  const beh=S.cfg.behavior,danger=missed>=beh.soft.days;
+  const dstr=new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"}).toUpperCase();
+  const w=Math.min(window.innerWidth,430)-28;
+  const pc=gs.pyramidsCompleted||0;
+  const stats=[{l:"Bloques",v:gs.blocksPlaced,c:Th.accent},{l:"🏆 Pirámides",v:pc,c:pc>0?Th.accent:Th.muted},{l:"Sin construir",v:missed,c:missed>=beh.soft.days?Th.danger:Th.muted},{l:"Derrumbes",v:gs.collapseCount,c:Th.muted}];
+  // Realme 8 y similares: 412px ancho, 820px viewport sin nav
+  const pyrContainerH=Math.max(200,window.innerHeight-320);
+  return`<div style="text-align:center;margin-bottom:6px"><div style="font-size:9px;color:${Th.muted};letter-spacing:3px">${dstr}</div><h1 style="font-size:22px;font-weight:900;color:${Th.accent};font-family:Georgia,serif;margin-top:1px">La Pirámide</h1></div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px">${stats.map(s=>`<div class="sbox" style="background:${Th.surface};border:1px solid ${Th.border};padding:6px 2px"><div class="sval" style="color:${s.c};font-size:18px">${s.v}</div><div class="slbl" style="color:${Th.faint}">${s.l}</div></div>`).join("")}</div>
+  <div style="margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span style="font-size:10px;color:${Th.muted};text-transform:uppercase;letter-spacing:1px">Nivel ${Math.floor(gs.blocksPlaced/10)+1}/${MR}</span><span style="font-size:11px;color:${Th.accent};font-weight:700;font-family:Georgia,serif">${pct}%</span></div><div class="pbar" style="background:${Th.border}"><div class="pfill" style="width:${pct}%;background:linear-gradient(90deg,${Th.accentDark},${Th.accent});box-shadow:0 0 8px ${Th.accentGlow}"></div></div></div>
+  <div style="background:${Th.surface};border-radius:14px;padding:10px 4px 14px;border:1px solid ${danger?Th.danger+"55":Th.border};overflow:hidden${danger?";animation:glow 2s infinite":""}">
+    ${pyr(gs.blocksPlaced,w-8,pyrContainerH)}
+  </div>
+  <div style="display:flex;gap:6px;margin-top:8px;margin-bottom:2px">
+    <div style="flex:1;padding:7px 8px;border-radius:8px;background:${Th.surface};border:1px solid ${Th.border};text-align:center">
+      <div style="font-size:15px;font-weight:900;color:${Th.accent};font-family:Georgia,serif">${gs.squarePlaced||0}</div>
+      <div style="font-size:8px;color:${Th.muted};text-transform:uppercase;letter-spacing:.5px;margin-top:1px">⬛ Cuadrados</div>
+    </div>
+    <div style="flex:1;padding:7px 8px;border-radius:8px;background:${Th.surface};border:1px solid ${Th.border};text-align:center">
+      <div style="font-size:15px;font-weight:900;color:${Th.success};font-family:Georgia,serif">${gs.trianglePlaced||0}</div>
+      <div style="font-size:8px;color:${Th.muted};text-transform:uppercase;letter-spacing:.5px;margin-top:1px">🔺 Triangulares</div>
+    </div>
+    <div style="flex:1;padding:7px 8px;border-radius:8px;background:${Th.surface};border:1px solid ${Th.border};text-align:center">
+      <div style="font-size:15px;font-weight:900;color:${Th.warn};font-family:Georgia,serif">${gs.reserveBlocks}</div>
+      <div style="font-size:8px;color:${Th.muted};text-transform:uppercase;letter-spacing:.5px;margin-top:1px">🟩 Reserva</div>
+    </div>
+  </div>
+  ${missed>0?`<div style="margin-top:10px;padding:10px 14px;border-radius:8px;text-align:center;background:${danger?Th.card:"transparent"};border:1px solid ${danger?Th.danger+"55":Th.warn+"44"};color:${danger?Th.danger:Th.warn};font-size:12px;font-family:Georgia,serif${missed>=beh.hard.days?";animation:glow 1.5s infinite":""}">${missed>=beh.hard.days?"💥":"⚠️"} ${missed} día${missed>1?"s":""} sin construir${missed<beh.soft.days?` · Penalización en ${beh.soft.days-missed} días`:""}${missed>=beh.soft.days&&missed<beh.hard.days?` · Pérdida ${beh.soft.pct}% activa`:""}${missed>=beh.hard.days?" · Derrumbe inminente":""}${gs.reserveBlocks>0?`<span style="color:${Th.success}"> · ${gs.reserveBlocks} reservas</span>`:""}</div>`:""}`;
+}
+
+function vRegistro(){
+  const Th=T();
+  const prev={};S.cfg.materials.forEach(m=>{prev[m.id]=0});
+  S.cfg.habits.forEach(h=>{const v=S.vals[h.id]??0;if(v>=h.threshold){prev[h.matId]=(prev[h.matId]||0)+1;if(h.bonus&&v>=h.bonus)prev[h.matId]++;}});
+  const tot=Object.values(prev).reduce((a,b)=>a+b,0);
+  const today=new Date().toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});
+  return`<div style="text-align:center;margin-bottom:14px"><h2 style="font-size:20px;font-weight:900;color:${Th.accent};font-family:'Georgia',serif">Registro del Día</h2><div style="font-size:11px;color:${Th.muted};margin-top:3px;font-family:Georgia,serif">${today}</div></div>
+  ${S.cfg.habits.map(h=>{
+    const m=gm(h.matId),v=S.vals[h.id]??0,ear=v>=h.threshold,bon=h.bonus&&v>=h.bonus;
+    return`<div style="margin-bottom:8px;padding:12px;border-radius:10px;background:${ear?Th.card:Th.surface};border:1px solid ${ear?m.color+"44":Th.border};transition:all .25s">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:${h.desc?6:8}px"><span style="font-size:13px;color:${Th.text};font-weight:600">${h.icon} ${esc(h.name)}</span><span style="font-size:11px;font-weight:700;color:${bon?"#FFD54F":ear?m.color:Th.faint};font-family:'Georgia',serif">${bon?"⚡+2":ear?"✓+1":"○0"}</span></div>
+      ${h.desc?`<div style="font-size:11px;color:${Th.muted};margin-bottom:8px;font-style:italic;line-height:1.55">${esc(h.desc)}</div>`:""}
+      ${h.type==="bool"?`<div style="display:flex;gap:8px">${[0,1].map(o=>`<button class="tbtn" style="background:${v===o?(o?m.color+"22":Th.danger+"22"):Th.card};border:1px solid ${v===o?(o?m.color:Th.danger):Th.border2};color:${v===o?(o?m.color:Th.danger):Th.muted}" onclick="sbv('${h.id}',${o})" ${S.done?"disabled":""}>${o?"✓ Sí":"✗ No"}</button>`).join("")}</div>`
+      :h.type==="scale"?`<div style="display:flex;gap:6px">${Array.from({length:h.max-h.min+1},(_,i)=>i+h.min).map(o=>`<button class="sbtn" style="background:${v===o?m.color+"22":Th.card};border:1px solid ${v===o?m.color:Th.border2};color:${v===o?m.color:Th.muted};font-weight:${v===o?900:400}" onclick="ssv('${h.id}',${o})" ${S.done?"disabled":""}>${o}</button>`).join("")}</div>`
+      :`<div style="display:flex;align-items:center;gap:10px"><input type="number" min="${h.min}" max="${h.max}" value="${v}" style="width:56px;padding:6px;border-radius:7px;text-align:center;background:${Th.card};border:1px solid ${Th.border2};color:${ear?m.color:Th.text};font-size:15px;font-weight:700" onchange="snv('${h.id}',this.value,${h.min},${h.max})" ${S.done?"disabled":""}><input type="range" min="${h.min}" max="${h.max}" value="${v}" style="flex:1;accent-color:${m.color}" oninput="snv('${h.id}',this.value,${h.min},${h.max})" ${S.done?"disabled":""}><span style="font-size:10px;color:${Th.muted};min-width:22px">${h.max}</span></div>`}
+    </div>`;
+  }).join("")}
+  <div style="margin:10px 0;padding:12px 14px;border-radius:10px;background:${Th.surface};border:1px solid ${Th.border}"><div class="stitle" style="color:${Th.muted}">Materiales que generarás</div><div style="display:flex;gap:6px;flex-wrap:wrap;min-height:22px">${Object.entries(prev).filter(([,v])=>v>0).map(([id,v])=>{const m=gm(id);return`<span class="mpill" style="background:${m.color}18;border:1px solid ${m.color}55;color:${m.color}">${m.icon} ×${v}</span>`}).join("")}${tot===0?`<span style="color:${Th.faint};font-size:12px;font-style:italic">Ninguno aún</span>`:""}</div></div>
+  ${!S.done?`<button class="btn-p" style="background:linear-gradient(135deg,${Th.accentDark},${Th.accent});color:${Th.bg};box-shadow:0 4px 20px ${Th.accentGlow}" onclick="subR()">⚒️ GENERAR MATERIALES</button>`:`<div style="text-align:center;padding:14px;border-radius:10px;background:${Th.card};border:1px solid ${Th.success}44;color:${Th.success};font-size:13px;font-family:Georgia,serif">✓ Registro completado hoy · Ve al Almacén para construir</div>`}`;
+}
+
+function vAlmacen(){
+  const Th=T(),gs=S.gs;
+  const cSq=cb(S.ms,S.cfg.squareRecipe,S.cfg.materials),cTr=cb(S.ms,S.cfg.triangleRecipe,S.cfg.materials);
+  const maxV=Math.max(...S.cfg.materials.map(m=>S.ms[m.id]||0),2);
+  const hbm={};S.cfg.habits.forEach(h=>{if(!hbm[h.matId])hbm[h.matId]=[];hbm[h.matId].push(h.name)});
+  function rc(type,label,recipe,canDo){
+    const mats=S.cfg.materials.filter(m=>(recipe[m.id]||0)>0);
+    return`<div style="margin-bottom:14px"><div class="stitle" style="color:${Th.muted}">Receta — ${label}</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${mats.map(m=>{const has=(S.ms[m.id]||0)>=(recipe[m.id]||0);return`<span class="rpill" style="background:${has?m.color+"18":Th.danger+"11"};border:1px solid ${has?m.color+"55":Th.danger+"44"};color:${has?m.color:Th.danger}">${m.icon} ×${recipe[m.id]} <span style="opacity:.6;font-size:10px">(${S.ms[m.id]||0})</span></span>`}).join("")}</div><button class="bbtn" style="background:${canDo?`linear-gradient(135deg,${Th.accentDark},${Th.accent})`:Th.surface};border:${canDo?"none":`1px solid ${Th.border}`};color:${canDo?Th.bg:Th.faint};box-shadow:${canDo?`0 4px 16px ${Th.accentGlow}`:"none"};cursor:${canDo?"pointer":"not-allowed"}" onclick="bb('${type}')">${canDo?`⚒️ CONSTRUIR ${label.toUpperCase()}`:"Materiales insuficientes"}</button></div>`;
+  }
+  return`<div style="text-align:center;margin-bottom:14px"><h2 style="font-size:20px;font-weight:900;color:${Th.accent};font-family:'Georgia',serif">Almacén</h2></div>
+  <div style="background:${Th.surface};border-radius:12px;padding:14px;margin-bottom:14px;border:1px solid ${Th.border}"><div class="stitle" style="color:${Th.muted}">Inventario</div>${S.cfg.materials.map(m=>{const amt=S.ms[m.id]||0,p=Math.min(amt/Math.max(maxV,1)*100,100),hbs=hbm[m.id]||[];return`<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px;align-items:center;gap:8px"><div style="flex:1;min-width:0"><span style="font-size:13px;color:${Th.text};font-weight:600">${hbs.length>0?esc(hbs.join(", ")):esc(m.name)}</span>${hbs.length>0?`<span style="font-size:10px;color:${Th.muted};margin-left:6px;font-style:italic">${m.icon} ${esc(m.name)}</span>`:""}</div><span style="font-size:17px;font-weight:900;color:${amt>0?m.color:Th.faint};font-family:'Georgia',serif;flex-shrink:0">${amt}</span></div><div class="mbw" style="background:${Th.border}"><div class="mbf" style="width:${p}%;background:linear-gradient(90deg,${m.dark},${m.color});${amt>0?`box-shadow:0 0 6px ${m.color}55`:""}"></div></div></div>`;}).join("")}</div>
+  <div style="background:${Th.card};border-radius:10px;padding:12px 14px;margin-bottom:16px;border:1px solid ${Th.success}33;display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;color:${Th.success};font-weight:700">🟩 Bloques de Reserva</div><div style="font-size:10px;color:${Th.muted};margin-top:2px">Máx ${S.cfg.maxReserve} · Se usan automáticamente</div></div><div style="font-size:28px;font-weight:900;color:${Th.success};font-family:'Georgia',serif">${gs.reserveBlocks}</div></div>
+  ${rc("square","Bloque Cuadrado",S.cfg.squareRecipe,cSq)}${rc("triangle","Bloque Triangular",S.cfg.triangleRecipe,cTr)}
+  <div style="padding:10px 14px;border-radius:8px;background:${Th.surface};border:1px solid ${Th.border};display:flex;justify-content:space-between"><span style="font-size:11px;color:${Th.muted}">Bloques colocados</span><span style="font-size:12px;font-weight:700;color:${Th.accent};font-family:'Georgia',serif">${gs.blocksPlaced} / ${TOT}</span></div>`;
+}
+
+function vConfig(){
+  const Th=T();
+  function ac(id,ic,lbl,content){
+    const op=S.cs===id;
+    return`<div style="margin-bottom:8px"><button class="ahdr" style="background:${op?Th.card:Th.surface};border:1px solid ${op?Th.accent+"55":Th.border};color:${op?Th.accent:Th.text};border-radius:${op?"10px 10px 0 0":"10px"}" onclick="tS('${id}')"><span>${ic} ${lbl}</span><span style="font-size:11px;display:inline-block;transform:${op?"rotate(180deg)":"none"};transition:transform .2s">▼</span></button>${op?`<div class="abody" style="background:${Th.card};border:1px solid ${Th.accent}33;border-radius:0 0 10px 10px">${content}</div>`:""}</div>`;
+  }
+  const matAc=S.cfg.materials.map(m=>`<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;border-radius:8px;background:${Th.surface};border:1px solid ${m.color}33"><span style="font-size:22px;flex-shrink:0">${m.icon}</span><div style="flex:1"><div style="font-size:13px;color:${m.color};font-weight:700">${esc(m.name)}</div><div style="width:40px;height:5px;border-radius:3px;background:linear-gradient(90deg,${m.dark},${m.color});margin-top:4px"></div></div><button class="ebtn" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.accent}" onclick="sEM('${m.id}')">EDITAR</button>${S.cfg.materials.length>1?`<button class="dbtn" style="border:1px solid ${Th.danger}44;color:${Th.danger}" onclick="dM('${m.id}')">✕</button>`:""}</div>`).join("")
+    +(S.cfg.materials.length<8?`<button class="abtn" style="border:2px dashed ${Th.border2};color:${Th.muted}" onclick="aM()">+ Añadir material (${S.cfg.materials.length}/8)</button>`:"");
+  const recAc=["squareRecipe","triangleRecipe"].map((key,ri)=>`<div style="margin-bottom:14px"><div style="font-size:11px;color:${Th.muted};margin-bottom:8px">${ri===0?"Bloque Cuadrado":"Bloque Triangular"}</div><div style="display:grid;grid-template-columns:repeat(${Math.min(S.cfg.materials.length,4)},1fr);gap:8px">${S.cfg.materials.map(m=>`<div style="text-align:center"><div style="font-size:18px;margin-bottom:3px">${m.icon}</div><input type="number" min="0" max="5" value="${S.cfg[key][m.id]||0}" style="width:100%;padding:5px;border-radius:6px;text-align:center;background:${Th.surface};border:1px solid ${m.color}44;color:${m.color};font-size:14px;font-weight:700" onchange="sR('${key}','${m.id}',this.value)"></div>`).join("")}</div></div>`).join("");
+  const behAc=["soft","hard"].map(k=>`<div style="margin-bottom:12px;padding:10px 12px;border-radius:8px;background:${Th.surface};border:1px solid ${Th.border}"><div style="font-size:12px;color:${Th.text};font-weight:700;margin-bottom:10px">${k==="soft"?"⚠️ Penalización parcial":"💥 Derrumbe"}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px"><div><div style="font-size:10px;color:${Th.muted};margin-bottom:4px">Días sin construir</div><input type="number" min="1" max="60" value="${S.cfg.behavior[k].days}" class="bnum" style="background:${Th.card};border:1px solid ${Th.warn}44;color:${Th.warn}" onchange="sBeh('${k}','days',this.value)"></div><div><div style="font-size:10px;color:${Th.muted};margin-bottom:4px">% bloques perdidos</div><input type="number" min="1" max="100" value="${S.cfg.behavior[k].pct}" class="bnum" style="background:${Th.card};border:1px solid ${Th.danger}44;color:${Th.danger}" onchange="sBeh('${k}','pct',this.value)"></div></div></div>`).join("");
+  const themeAc=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">${Object.entries(THEMES).map(([id,th])=>`<button class="tcard" style="background:${th.bg};border-color:${id===S.themeId?th.accent:th.border2};box-shadow:${id===S.themeId?`0 0 12px ${th.accentGlow}`:""}" onclick="sTh('${id}')"><div style="font-size:11px;font-weight:700;color:${th.accent};font-family:'Georgia',serif;margin-bottom:4px">${th.name}</div><div style="display:flex;gap:3px;justify-content:center">${[th.accent,th.success,th.danger,th.text].map(c=>`<span class="tdot" style="background:${c}"></span>`).join("")}</div><div style="font-size:9px;color:${th.muted};margin-top:4px">${th.mode==="dark"?"🌙 Oscuro":"☀️ Claro"}</div>${id===S.themeId?`<div style="font-size:9px;color:${th.success};margin-top:2px">✓ Activo</div>`:""}</button>`).join("")}</div>`;
+  const bs=S.bst,sc=bs?.type==="ok"?Th.success:bs?.type==="err"?Th.danger:Th.accent;
+  const hasT=!!S.cfg.githubToken,hasG=!!(S.bsel||S.cfg.gistId);
+  const backAc=`<div style="padding:12px 14px;border-radius:8px;background:${Th.surface};border:1px solid ${Th.border};margin-bottom:14px;font-size:12px;color:${Th.muted};line-height:1.7;font-family:Georgia,serif"><div style="font-weight:700;color:${Th.text};margin-bottom:6px;font-size:13px">🔑 Cómo obtener tu token</div><div>1. Ve a <b style="color:${Th.accent}">github.com</b> → tu foto → Settings</div><div>2. Developer settings → Personal access tokens → Tokens (classic)</div><div>3. Generate new token → marca solo el permiso <b style="color:${Th.accent}">gist</b></div><div>4. Copia el token y pégalo aquí ↓</div></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Token de GitHub</div><div style="display:flex;gap:6px"><input id="gh-tok" type="password" value="${esc(S.cfg.githubToken||"")}" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1;padding:10px 12px;border-radius:8px;background:${Th.card};border:1px solid ${hasT?Th.success+"55":Th.border2};color:${Th.text};font-size:13px;font-family:monospace" oninput="S.cfg.githubToken=this.value"><button onclick="var i=document.getElementById('gh-tok');i.type=i.type==='password'?'text':'password';this.textContent=i.type==='password'?'👁':'🙈'" style="padding:0 12px;border-radius:8px;background:${Th.card};border:1px solid ${Th.border2};color:${Th.muted};font-size:16px;flex-shrink:0">👁</button></div>${hasT?`<div style="font-size:10px;color:${Th.success};margin-top:3px">✓ Token introducido · tócalo para copiarlo al otro dispositivo</div>`:""}</div>
+  <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px"><div class="flbl" style="color:${Th.muted};margin-bottom:0">Gist ID</div><button style="font-size:11px;color:${Th.accent};background:none;border:none;cursor:${hasT?"pointer":"not-allowed"};text-decoration:underline;opacity:${hasT?1:.5}" onclick="lG()" ${!hasT?"disabled":""}>Buscar mis Gists</button></div>
+  ${S.bgists.length>0?`<select style="width:100%;padding:9px 12px;border-radius:8px;background:${Th.card};border:1px solid ${Th.border2};color:${Th.text};font-size:12px" onchange="S.bsel=this.value">${["<option value=''>— Selecciona un backup —",...S.bgists.map(g=>`<option value="${g.id}" ${g.id===(S.bsel||S.cfg.gistId)?"selected":""}>${esc(g.description||g.id)} · ${new Date(g.updated_at).toLocaleDateString("es-ES")}</option>`)].join("")}</select>`:`<input value="${esc(S.bsel||S.cfg.gistId||"")}" placeholder="Se genera al hacer el primer backup" style="width:100%;padding:9px 12px;border-radius:8px;background:${Th.card};border:1px solid ${Th.border2};color:${Th.text};font-size:12px;font-family:monospace" oninput="S.bsel=this.value">`}</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px"><button onclick="bSave()" style="padding:13px 8px;border-radius:10px;background:${hasT?`linear-gradient(135deg,${Th.accentDark},${Th.accent})`:Th.surface};border:${hasT?"none":`1px solid ${Th.border}`};color:${hasT?Th.bg:Th.faint};font-size:12px;font-weight:900;font-family:'Georgia',serif;opacity:${hasT?1:.6}" ${!hasT?"disabled":""}>☁️ GUARDAR<br><span style="font-size:10px;font-weight:400;opacity:.8">en Gist</span></button><button onclick="bLoad()" style="padding:13px 8px;border-radius:10px;background:none;border:1px solid ${Th.accent}66;color:${Th.accent};font-size:12px;font-weight:900;font-family:'Georgia',serif;opacity:${(hasT&&hasG)?1:.5}" ${!(hasT&&hasG)?"disabled":""}>📥 RESTAURAR<br><span style="font-size:10px;font-weight:400;opacity:.8">desde Gist</span></button></div>
+  ${bs?`<div class="gsts" style="background:${Th.card};border:1px solid ${sc}44;color:${sc}">${bs.type==="loading"?`<span style="display:inline-block;animation:spin 1s linear infinite;font-size:16px">⟳</span> `:""}${esc(bs.msg)}</div>`:""}
+  <div style="margin-top:14px;padding-top:12px;border-top:1px solid ${Th.border}"><div class="stitle" style="color:${Th.muted}">Exportación local</div><button onclick="eCSV()" style="width:100%;padding:11px;border-radius:8px;background:none;border:1px solid ${Th.success}55;color:${Th.success};font-size:12px;font-weight:700">📊 Exportar CSV para Excel / Sheets</button></div>`;
+  return`<div style="text-align:center;margin-bottom:16px"><h2 style="font-size:20px;font-weight:900;color:${Th.accent};font-family:'Georgia',serif">Configuración</h2></div>
+  <div style="margin-bottom:8px"><div class="stitle" style="color:${Th.muted}">Hábitos</div>${S.cfg.habits.map(h=>{const m=gm(h.matId);return`<div class="hrow" style="background:${Th.surface};border:1px solid ${Th.border}"><span style="font-size:20px;flex-shrink:0">${h.icon}</span><div style="flex:1;min-width:0"><div style="font-size:13px;color:${Th.text};font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(h.name)}</div><div style="font-size:10px;color:${m.color};margin-top:1px">${m.icon} ${esc(m.name)} · ≥${h.threshold}${h.bonus?` / bonus ≥${h.bonus}`:""}</div></div><button class="ebtn" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.accent}" onclick="sEH('${h.id}')">EDITAR</button><button class="dbtn" style="border:1px solid ${Th.danger}44;color:${Th.danger}" onclick="dH('${h.id}')">✕</button></div>`;}).join("")}${S.cfg.habits.length<8?`<button class="abtn" style="border:2px dashed ${Th.border2};color:${Th.muted}" onclick="aH()">+ Añadir hábito (${S.cfg.habits.length}/8)</button>`:""}</div>
+  ${ac("materials","💎","Materiales",matAc)}${ac("recipes","🧱","Recetas de Bloques",recAc)}${ac("behavior","⚠️","Comportamiento",behAc)}${ac("themes","🎨","Modos Gráficos",themeAc)}${ac("backup","☁️","Copia de Seguridad",backAc)}
+  <div style="height:12px"></div><button class="btn-p" style="background:linear-gradient(135deg,${Th.accentDark},${Th.accent});color:${Th.bg};box-shadow:0 4px 20px ${Th.accentGlow}" onclick="sCfg()">GUARDAR CONFIGURACIÓN</button>`;
+}
+
+function vHE(){
+  const Th=T(),h=S.eh;
+  const pO=S.po==="habit";
+  const filt=HI.filter(ic=>!S.ps||ic.includes(S.ps));
+  return`<div style="animation:slideDown .3s ease"><div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button class="back" style="color:${Th.accent}" onclick="canEH()">←</button><h3 style="font-size:16px;font-weight:900;color:${Th.accent};font-family:'Georgia',serif">${esc(h.name||"Nuevo Hábito")}</h3></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Nombre</div><input class="fi" value="${esc(h.name||"")}" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.text}" oninput="S.eh.name=this.value"></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Descripción / Objetivo</div><textarea rows="5" style="width:100%;padding:10px 12px;border-radius:8px;background:${Th.card};border:1px solid ${Th.border2};color:${Th.text};font-size:13px;font-family:Georgia,serif" placeholder="Describe el hábito, su contexto, por qué importa…" oninput="S.eh.desc=this.value;document.getElementById('cc').textContent=this.value.length+' caracteres'">${esc(h.desc||"")}</textarea><div style="font-size:10px;color:${Th.muted};margin-top:3px;text-align:right" id="cc">${(h.desc||"").length} caracteres</div></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Icono</div><div class="pw"><button onclick="tP('habit')" style="padding:8px 14px;border-radius:8px;background:${Th.card};border:1px solid ${Th.border2};font-size:22px;display:flex;align-items:center;gap:8px;color:${Th.text}"><span>${h.icon||"🎯"}</span><span style="font-size:10px;color:${Th.muted}">▼</span></button>${pO?`<div class="pdrop" style="background:${Th.surface};border:1px solid ${Th.border2}"><input class="psrch" placeholder="Buscar…" value="${esc(S.ps)}" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.text}" oninput="S.ps=this.value;rHE()"><div class="igrid">${filt.map(ic=>`<button class="ibtn" style="background:${h.icon===ic?Th.accent+"33":Th.card};border:1px solid ${h.icon===ic?Th.accent:Th.border}" onclick="sHI('${ic}')">${ic}</button>`).join("")}${filt.length===0?`<span style="color:${Th.muted};font-size:12px;padding:8px">Sin resultados</span>`:""}</div></div>`:""}</div></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Material generado</div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${S.cfg.materials.map(m=>`<button style="padding:8px 4px;border-radius:8px;background:${h.matId===m.id?m.color+"22":Th.card};border:1px solid ${h.matId===m.id?m.color:Th.border};color:${h.matId===m.id?m.color:Th.muted};font-size:11px;font-weight:700;text-align:center;transition:all .15s" onclick="S.eh.matId='${m.id}';rHE()"><div style="font-size:18px">${m.icon}</div><div style="font-size:9px;margin-top:2px;line-height:1.2">${esc(m.name)}</div></button>`).join("")}</div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"><div><div class="flbl" style="color:${Th.muted}">Tipo</div><select style="width:100%;padding:8px;border-radius:7px;background:${Th.card};border:1px solid ${Th.border2};color:${Th.text};font-size:12px" onchange="S.eh.type=this.value">${["bool","scale","number"].map(t=>`<option value="${t}" ${h.type===t?"selected":""}>${t==="bool"?"Sí/No":t==="scale"?"Escala":"Número"}</option>`).join("")}</select></div>${[["Mínimo","min"],["Máximo","max"],["Umbral ✓","threshold"],["Bonus ⚡","bonus"]].map(([lb,fi])=>`<div><div class="flbl" style="color:${Th.muted}">${lb}</div><input type="number" value="${h[fi]??""}" class="ni2" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.text}" onchange="S.eh['${fi}']=this.value===''?null:+this.value"></div>`).join("")}</div>
+  <button class="btn-p" style="background:linear-gradient(135deg,${Th.accentDark},${Th.accent});color:${Th.bg}" onclick="svH()">GUARDAR HÁBITO</button></div>`;
+}
+
+function vME(){
+  const Th=T(),m=S.em;
+  const pO=S.po==="mat";
+  const filt=MI.filter(ic=>!S.ps||ic.includes(S.ps));
+  return`<div style="animation:slideDown .3s ease"><div style="display:flex;align-items:center;gap:12px;margin-bottom:18px"><button class="back" style="color:${Th.accent}" onclick="canEM()">←</button><h3 style="font-size:16px;font-weight:900;color:${Th.accent};font-family:'Georgia',serif">${m.icon} ${esc(m.name)}</h3></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Nombre</div><input class="fi" value="${esc(m.name||"")}" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.text}" oninput="S.em.name=this.value"></div>
+  <div style="margin-bottom:12px"><div class="flbl" style="color:${Th.muted}">Icono</div><div class="pw"><button onclick="tP('mat')" style="padding:8px 14px;border-radius:8px;background:${Th.card};border:1px solid ${Th.border2};font-size:22px;display:flex;align-items:center;gap:8px;color:${Th.text}"><span>${m.icon||"⭐"}</span><span style="font-size:10px;color:${Th.muted}">▼</span></button>${pO?`<div class="pdrop" style="background:${Th.surface};border:1px solid ${Th.border2}"><input class="psrch" placeholder="Buscar…" value="${esc(S.ps)}" style="background:${Th.card};border:1px solid ${Th.border2};color:${Th.text}" oninput="S.ps=this.value;rME()"><div class="igrid">${filt.map(ic=>`<button class="ibtn" style="background:${m.icon===ic?Th.accent+"33":Th.card};border:1px solid ${m.icon===ic?Th.accent:Th.border}" onclick="sMI('${ic}')">${ic}</button>`).join("")}${filt.length===0?`<span style="color:${Th.muted};font-size:12px;padding:8px">Sin resultados</span>`:""}</div></div>`:""}</div></div>
+  <div style="margin-bottom:16px"><div class="flbl" style="color:${Th.muted}">Color</div><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">${MC.map(c=>`<button class="csw" style="background:${c};border:3px solid ${m.color===c?"#FFF":"transparent"};box-shadow:${m.color===c?`0 0 10px ${c}`:""}" onclick="S.em.color='${c}';S.em.dark='${c}99';rME()"></button>`).join("")}</div><div style="display:flex;align-items:center;gap:10px"><span style="font-size:11px;color:${Th.muted};flex-shrink:0">Personalizado:</span><input type="color" value="${m.color}" style="width:44px;height:36px;border-radius:8px;border:1px solid ${Th.border2};background:none;cursor:pointer" oninput="S.em.color=this.value;S.em.dark=this.value+'aa';rME()"><span style="padding:6px 14px;border-radius:20px;background:${m.color}22;border:1px solid ${m.color}55;color:${m.color};font-size:13px;font-weight:700">${m.icon} ${esc(m.name)}</span></div></div>
+  <button class="btn-p" style="background:linear-gradient(135deg,${Th.accentDark},${Th.accent});color:${Th.bg}" onclick="svM()">GUARDAR MATERIAL</button></div>`;
+}
+
+function aev(){
+  document.addEventListener("click",function oc(ev){
+    if(S.po&&!ev.target.closest(".pw")){S.po=null;S.ps="";document.removeEventListener("click",oc);if(S.eh)rHE();else if(S.em)rME();}
+  });
+}
+
+// ── ACTIONS ──────────────────────────────────────────────────────
+function setTab(id){S.tab=id;if(id==="registro"){S.vals={};S.cfg.habits.forEach(h=>{S.vals[h.id]=S.tlog?.values?.[h.id]??(h.type==="bool"?0:h.min||0)});S.done=!!S.tlog;}render()}
+function sbv(id,v){if(S.done)return;S.vals[id]=+v;rMain()}
+function ssv(id,v){if(S.done)return;S.vals[id]=+v;rMain()}
+function snv(id,v,mn,mx){if(S.done)return;S.vals[id]=Math.max(+mn,Math.min(+mx,+v));rMain()}
+
+function subR(){
+  const prev={};S.cfg.materials.forEach(m=>{prev[m.id]=0});
+  S.cfg.habits.forEach(h=>{const v=S.vals[h.id]??0;if(v>=h.threshold){prev[h.matId]=(prev[h.matId]||0)+1;if(h.bonus&&v>=h.bonus)prev[h.matId]++;}});
+  const td=new Date().toDateString();
+  S.logs=S.logs.filter(l=>l.date!==td);
+  S.logs.push({date:td,values:{...S.vals},materials:prev});
+  S.tlog=S.logs[S.logs.length-1];S.done=true;
+  Object.entries(prev).forEach(([k,v])=>{S.ms[k]=(S.ms[k]||0)+v});
+  ss(SK.m,S.ms);ss(SK.l,S.logs);
+  showToast(`+${Object.values(prev).reduce((a,b)=>a+b,0)} materiales generados`,T().accent);
+  if(S.cfg.githubToken&&S.cfg.gistId)setTimeout(()=>autoSave(),1500);
+  setTimeout(()=>{S.tab="almacen";render()},1300);
+}
+
+function bb(type){
+  const recipe=type==="square"?S.cfg.squareRecipe:S.cfg.triangleRecipe;
+  if(!cb(S.ms,recipe,S.cfg.materials))return;
+  let nm=ded(S.ms,recipe);
+  const isSq=type==="square";
+  let nb=S.gs.blocksPlaced+1;
+  let nr=S.gs.reserveBlocks;
+  let nSq=S.gs.squarePlaced+(isSq?1:0);
+  let nTr=S.gs.trianglePlaced+(isSq?0:1);
+  let nPyr=S.gs.pyramidsCompleted||0;
+  if(cb(nm,recipe,S.cfg.materials)&&nr<S.cfg.maxReserve){nm=ded(nm,recipe);nr++;showToast("⚒️ Bloque + 1 reserva",T().success);}
+  else showToast("⚒️ ¡Bloque colocado!",T().accent);
+  // Detect pyramid completion
+  if(nb>=TOT){
+    nPyr++;nb=0;nr=0;nSq=0;nTr=0;
+    setTimeout(()=>showToast("🏆 ¡PIRÁMIDE COMPLETADA! #"+nPyr,T().accent),400);
+  }
+  S.ms=nm;
+  S.gs={...S.gs,blocksPlaced:nb,reserveBlocks:nr,consecutiveMisses:0,lastBuildDate:new Date().toDateString(),squarePlaced:nSq,trianglePlaced:nTr,pyramidsCompleted:nPyr};
+  ss(SK.m,S.ms);ss(SK.s,S.gs);
+  if(S.cfg.githubToken&&S.cfg.gistId)setTimeout(()=>autoSave(),600);
+  S.tab="pyramid";render();
+}
+
+function tS(id){S.cs=S.cs===id?null:id;rMain()}
+function sTh(id){S.themeId=id;S.cfg.themeId=id;ss(SK.c,S.cfg);ss('pxv4-theme',id);render()}
+function sR(key,mid,val){S.cfg[key][mid]=Math.max(0,+val)}
+function sBeh(key,field,val){S.cfg.behavior[key][field]=+val}
+function sCfg(){S.cfg.themeId=S.themeId;ss(SK.c,S.cfg);ss('pxv4-theme',S.themeId);showToast("✓ Configuración guardada",T().success);if(S.cfg.githubToken&&S.cfg.gistId)setTimeout(()=>autoSave(),500);rMain()}
+
+function sEH(id){S.eh={...S.cfg.habits.find(h=>h.id===id)};S.po=null;S.ps="";rMain()}
+function canEH(){S.eh=null;rMain()}
+function aH(){S.eh={id:`h${Date.now()}`,name:"Nuevo hábito",desc:"",matId:S.cfg.materials[0]?.id||"blue",type:"bool",min:0,max:1,threshold:1,bonus:null,icon:"🎯"};rMain()}
+function dH(id){S.cfg.habits=S.cfg.habits.filter(h=>h.id!==id);rMain()}
+function svH(){const h=S.eh,idx=S.cfg.habits.findIndex(x=>x.id===h.id);if(idx>=0)S.cfg.habits[idx]={...h};else S.cfg.habits.push({...h});S.eh=null;rMain()}
+function rHE(){document.getElementById("main").innerHTML=vHE();aev()}
+function tP(type){S.po=S.po===type?null:type;S.ps="";if(S.eh)rHE();else if(S.em)rME();}
+function sHI(ic){S.eh.icon=ic;S.po=null;S.ps="";rHE()}
+function sMI(ic){S.em.icon=ic;S.po=null;S.ps="";rME()}
+
+function sEM(id){S.em={...S.cfg.materials.find(m=>m.id===id)};S.po=null;S.ps="";rMain()}
+function canEM(){S.em=null;rMain()}
+function aM(){const id=`mat${Date.now()}`;const nm={id,name:"Nuevo material",icon:"⭐",color:MC[S.cfg.materials.length%MC.length],dark:"#444"};S.cfg.materials.push(nm);S.em={...nm};rMain()}
+function dM(id){S.cfg.materials=S.cfg.materials.filter(m=>m.id!==id);rMain()}
+function svM(){const m=S.em,idx=S.cfg.materials.findIndex(x=>x.id===m.id);if(idx>=0)S.cfg.materials[idx]={...m};else S.cfg.materials.push({...m});S.em=null;rMain()}
+function rME(){document.getElementById("main").innerHTML=vME();aev()}
+
+async function gistSave(token,eid,logs,cfg,gs,stock){
+  const payload={version:4,savedAt:new Date().toISOString(),savedAtReadable:new Date().toLocaleString("es-ES"),gameState:gs,matStock:stock,config:{...cfg,githubToken:"***"},logs};
+  const body={description:`La Pirámide — Backup ${new Date().toLocaleDateString("es-ES")}`,public:false,files:{[GF]:{content:JSON.stringify(payload,null,2)}}};
+  const url=eid?`https://api.github.com/gists/${eid}`:"https://api.github.com/gists";
+  const res=await fetch(url,{method:eid?"PATCH":"POST",headers:{Authorization:`Bearer ${token}`,"Content-Type":"application/json","X-GitHub-Api-Version":"2022-11-28"},body:JSON.stringify(body)});
+  if(!res.ok){const e=await res.json();throw new Error(e.message||`HTTP ${res.status}`)}
+  return (await res.json()).id;
+}
+async function gistLoad(token,id){
+  const res=await fetch(`https://api.github.com/gists/${id}`,{headers:{Authorization:`Bearer ${token}`,"X-GitHub-Api-Version":"2022-11-28"}});
+  if(!res.ok){const e=await res.json();throw new Error(e.message||`HTTP ${res.status}`)}
+  const data=await res.json();const content=data.files?.[GF]?.content;
+  if(!content)throw new Error("Archivo no encontrado");return JSON.parse(content);
+}
+async function gistList(token){
+  const res=await fetch("https://api.github.com/gists?per_page=30",{headers:{Authorization:`Bearer ${token}`,"X-GitHub-Api-Version":"2022-11-28"}});
+  if(!res.ok)throw new Error(`HTTP ${res.status}`);
+  return (await res.json()).filter(g=>g.files?.[GF]);
+}
+
+async function bSave(){
+  const token=S.cfg.githubToken;
+  if(!token){S.bst={type:"err",msg:"Introduce primero tu token"};rMain();return}
+  S.bst={type:"loading",msg:"Guardando en GitHub Gist…"};rMain();
+  try{
+    const id=await gistSave(token,S.bsel||S.cfg.gistId,S.logs,S.cfg,S.gs,S.ms);
+    S.cfg.gistId=id;S.bsel=id;ss(SK.c,S.cfg);ss('pxv4-lastSync',new Date().toISOString());
+    S.bst={type:"ok",msg:`✓ Guardado · Gist ${id.slice(0,8)}…`};
+    showToast("✓ Backup guardado en GitHub",T().success);
+  }catch(err){S.bst={type:"err",msg:`Error: ${err.message}`};}
+  rMain();
+}
+
+async function bLoad(){
+  const token=S.cfg.githubToken,id=S.bsel||S.cfg.gistId;
+  if(!token||!id){S.bst={type:"err",msg:"Token y Gist ID necesarios"};rMain();return}
+  S.bst={type:"loading",msg:"Recuperando datos desde GitHub…"};rMain();
+  try{
+    const data=await gistLoad(token,id);
+    const conf={...JSON.parse(JSON.stringify(DC)),...(data.config||{})};
+    conf.githubToken=token;conf.gistId=id;
+    const st={...DS,...(data.gameState||{})};
+    const stock={...bst(conf.materials||DM),...(data.matStock||{})};
+    const ll=data.logs||[];
+    S.cfg=conf;S.gs=st;S.ms=stock;S.logs=ll;S.themeId=conf.themeId||"stone";
+    const td=new Date().toDateString();S.tlog=ll.find(l=>l.date===td)||null;S.done=!!S.tlog;
+    S.vals={};conf.habits.forEach(h=>{S.vals[h.id]=S.tlog?.values?.[h.id]??(h.type==="bool"?0:h.min||0)});
+    ss(SK.c,conf);ss(SK.s,st);ss(SK.m,stock);ss(SK.l,ll);
+    ss('pxv4-theme',conf.themeId||"stone");
+    S.bst={type:"ok",msg:`✓ Restaurado · ${data.savedAtReadable||""}`};
+    showToast("✓ Datos restaurados",T().success);
+  }catch(err){S.bst={type:"err",msg:`Error: ${err.message}`};}
+  render();
+}
+
+async function lG(){
+  const token=S.cfg.githubToken;
+  if(!token){S.bst={type:"err",msg:"Introduce tu token primero"};rMain();return}
+  S.bst={type:"loading",msg:"Buscando Gists…"};rMain();
+  try{
+    S.bgists=await gistList(token);
+    S.bst=S.bgists.length===0?{type:"ok",msg:"No se encontraron backups de La Pirámide"}:null;
+  }catch(err){S.bst={type:"err",msg:`Error: ${err.message}`};}
+  rMain();
+}
+
+function eCSV(){
+  const h=S.cfg.habits;
+  const header=["Fecha",...h.map(x=>x.name),"Total_mats"].join(";");
+  const rows=S.logs.map(l=>[l.date,...h.map(x=>l.values?.[x.id]??0),Object.values(l.materials||{}).reduce((a,b)=>a+b,0)].join(";"));
+  const blob=new Blob(["\uFEFF"+[header,...rows].join("\n")],{type:"text/csv;charset=utf-8"});
+  const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="piramide_registros.csv";a.click();URL.revokeObjectURL(url);
+}
+
+async function autoSave(){
+  const token=S.cfg.githubToken,id=S.cfg.gistId;
+  if(!token||!id)return;
+  try{
+    const now=new Date().toISOString();
+    await gistSave(token,id,S.logs,S.cfg,S.gs,S.ms);
+    ss('pxv4-lastSync',now);
+    showToast("☁️ Guardado automático",T().success);
+  }catch(e){console.warn("AutoSave failed:",e.message);}
+}
+
+async function autoLoad(){
+  const token=S.cfg.githubToken,id=S.cfg.gistId;
+  if(!token||!id)return;
+  try{
+    const data=await gistLoad(token,id);
+    // Only restore if remote data is newer than local
+    const remoteDate=new Date(data.savedAt||0);
+    const localDate=new Date(sg('pxv4-lastSync')||0);
+    if(remoteDate<=localDate)return; // local is up to date
+    const conf={...JSON.parse(JSON.stringify(DC)),...(data.config||{})};
+    conf.githubToken=token;conf.gistId=id;
+    const st={...DS,...(data.gameState||{})};
+    const stock={...bst(conf.materials||DM),...(data.matStock||{})};
+    const ll=data.logs||[];
+    S.cfg=conf;S.gs=st;S.ms=stock;S.logs=ll;S.themeId=conf.themeId||"stone";
+    const td=new Date().toDateString();S.tlog=ll.find(l=>l.date===td)||null;S.done=!!S.tlog;
+    S.vals={};S.cfg.habits.forEach(h=>{S.vals[h.id]=S.tlog?.values?.[h.id]??(h.type==="bool"?0:h.min||0)});
+    S.vals={};conf.habits.forEach(h=>{S.vals[h.id]=S.tlog?.values?.[h.id]??(h.type==="bool"?0:h.min||0)});
+    ss(SK.c,conf);ss(SK.s,st);ss(SK.m,stock);ss(SK.l,ll);
+    ss('pxv4-lastSync',data.savedAt);ss('pxv4-theme',conf.themeId||"stone");
+    showToast("☁️ Sincronizado desde Gist",T().success);
+    render();
+  }catch(e){console.warn("AutoLoad failed:",e.message);}
+}
+
+// Auto-save when app goes to background (tab hidden, phone locks, etc.)
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState==="hidden")autoSave();
+});
+// pagehide es más fiable en iOS/Android que beforeunload
+window.addEventListener("pagehide",()=>autoSave());
+
+// Auto-save on page unload (desktop browsers)
+window.addEventListener("beforeunload",()=>{
+  if(S.cfg.githubToken&&S.cfg.gistId)autoSave();
+});
+
+init();
+</script>
+</body>
+</html>
